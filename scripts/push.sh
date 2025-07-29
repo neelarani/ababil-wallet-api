@@ -14,14 +14,14 @@ git commit -m "chore(auto): auto commit - latest build: $TIMESTAMP"
 
 case $CONDITION in
 "force")
-  echo "Forcefully pushing to GitHub and GitLab..."
+  echo "Forcefully pushing to GitHub..."
     git push -u origin main -f
   ;;
 *)
-  echo "Pushing to GitHub and GitLab..."
+  echo "Pushing to GitHub..."
   git push -u origin main 
   ;;
 esac
 
 wait
-echo "Push complete to both remotes."
+echo "Push complete to Github."
