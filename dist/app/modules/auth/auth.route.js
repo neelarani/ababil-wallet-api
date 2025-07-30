@@ -32,16 +32,11 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.util = exports.helper = exports.constants = void 0;
-exports.constants = __importStar(require("./constants"));
-exports.helper = __importStar(require("./helpers"));
-exports.util = __importStar(require("./utils"));
-__exportStar(require("./common"), exports);
-__exportStar(require("./constants"), exports);
-__exportStar(require("./helpers"), exports);
-__exportStar(require("./utils"), exports);
-__exportStar(require("./common"), exports);
+const express_1 = require("express");
+const controller = __importStar(require("./auth.controller"));
+const middlewares_1 = require("../../../app/middlewares");
+const validator = __importStar(require("./auth.validation"));
+const router = (0, express_1.Router)();
+router.post('/login', (0, middlewares_1.validateRequest)(validator.zCredentialLoginSchema), controller.credentialLogin);
+exports.default = router;

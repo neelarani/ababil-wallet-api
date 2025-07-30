@@ -14,15 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("./config");
 const _server_1 = __importDefault(require("./_server"));
+const seedSuperAdmin_1 = require("./shared/common/seedSuperAdmin");
 const server = new _server_1.default();
 (() => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, config_1.connectDB)();
+    yield (0, seedSuperAdmin_1.seedSuperAdmin)();
     yield server.init();
 }))();
-process.on('uncaughtException', () => {
+process.on('uncaughtException', err => {
+    console.log(err);
     server.shutdown();
 });
-process.on('unhandledRejection', () => {
+process.on('unhandledRejection', err => {
+    console.log(err);
     server.shutdown();
 });
 process.on('SIGINT', () => {

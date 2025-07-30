@@ -9,12 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rootResponse = void 0;
-const shared_1 = require("../../shared");
-exports.rootResponse = shared_1.util.catchAsync((_, res) => __awaiter(void 0, void 0, void 0, function* () {
-    shared_1.util.sendResponse(res, {
-        success: true,
-        status: shared_1.constants.HTTP_CODE.OK,
-        message: 'Welcome to Ababil Wallet API ❤️ྀི',
-    });
+exports.validateRequest = void 0;
+const utils_1 = require("../../shared/utils");
+const validateRequest = (zs) => (0, utils_1.catchAsync)((req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+    req.body = yield zs.parseAsync(req.body);
+    next();
 }));
+exports.validateRequest = validateRequest;
