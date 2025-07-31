@@ -8,7 +8,7 @@ import { verifyToken } from '@/shared/utils/jwt';
 
 export const checkAuth = (...authRoles: string[]) =>
   catchAsync(async (req, res, next) => {
-    const accessToken = req.cookies.accessToken;
+    const accessToken = req.headers.authorization || req.headers.authorization;
 
     if (!accessToken) throw new AppError(403, 'No Token Received!');
 
