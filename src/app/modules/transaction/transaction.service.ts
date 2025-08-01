@@ -4,8 +4,10 @@ import { Transaction } from './transaction.model';
 import { AppError } from '@/app/errors';
 import { HTTP_CODE } from '@/shared';
 import { Wallet } from '../wallet/wallet.model';
-import mongoose from 'mongoose';
+import { startSession } from 'mongoose';
 import { User } from '../user/user.model';
+import { Role } from '../user/user.interface';
+import { useQuery } from 'mongoose-qb';
 
 export const topUpMoney = async (
   payload: ITransaction,
@@ -101,7 +103,7 @@ export const sendMoney = async (
     throw new AppError(HTTP_CODE.BAD_REQUEST, `Cannot send money to yourself`);
   }
 
-  const session = await mongoose.startSession();
+  const session = await startSession();
   session.startTransaction();
 
   try {
@@ -132,17 +134,19 @@ export const sendMoney = async (
     await senderWallet.save({ session });
     await receiverWallet.save({ session });
 
-    const transaction = await Transaction.create(
-      [
-        {
-          sender: decodedToken.userId,
-          receiver: payload.receiverId,
-          amount: payload.amount,
-          transactionType: TransactionType.SEND_MONEY,
-        },
-      ],
-      { session }
-    );
+    const transaction = (
+      await Transaction.create(
+        [
+          {
+            sender: decodedToken.userId,
+            receiver: payload.receiverId,
+            amount: payload.amount,
+            transactionType: TransactionType.SEND_MONEY,
+          },
+        ],
+        { session }
+      )
+    )[0];
 
     await session.commitTransaction();
     session.endSession();
@@ -155,12 +159,32 @@ export const sendMoney = async (
   }
 };
 
-export const transactionHistory = async (userId: string) => {
-  const user = await User.findById(userId).populate('transaction');
+export const transactionHistory = async (
+  query: Record<string, string>,
+  decodedToken: JwtPayload
+) => {
+  const { author_type, userId, ...rest } = query || {};
+  const isAdmin = [Role.ADMIN, Role.SUPER_ADMIN].includes(decodedToken.role);
 
-  if (!user) {
-    throw new AppError(HTTP_CODE.NOT_FOUND, 'User not found!');
-  }
+  if (!author_type && !isAdmin)
+    throw new AppError(
+      HTTP_CODE.BAD_REQUEST,
+      `You must provide author_type params in request, [e.g. ?author_type=sender, ?author_type=receiver]`
+    );
 
-  return user;
+  query = isAdmin
+    ? { ...rest, [author_type]: userId }
+    : {
+        [author_type]: decodedToken.userId,
+        ...rest,
+      };
+
+  return await useQuery(Transaction, query, {
+    filter: true,
+    paginate: true,
+    populate: [
+      { path: 'sender', select: 'name email phone' },
+      { path: 'receiver', select: 'name email phone' },
+    ],
+  });
 };

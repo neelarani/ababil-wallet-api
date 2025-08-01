@@ -36,13 +36,13 @@ export const sendMoney = catchAsync(async (req, res) => {
 });
 
 export const transactionHistory = catchAsync(async (req, res) => {
-  const userId = req.params.id;
-  const result = await service.transactionHistory(userId);
-
   sendResponse(res, {
     success: true,
     status: HTTP_CODE.OK,
     message: 'Transaction History retrieved successfully',
-    data: result,
+    data: await service.transactionHistory(
+      req.query as Record<string, string>,
+      req.user as JwtPayload
+    ),
   });
 });

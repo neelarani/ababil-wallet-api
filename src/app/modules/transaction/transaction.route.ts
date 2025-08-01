@@ -16,7 +16,7 @@ router.post(
 router.post(
   '/withdraw',
   checkAuth(Role.USER),
-  validateRequest(validator.zTopUpMoneySchema),
+  validateRequest(validator.zWithdrawSchema),
   controller.withdraw
 );
 
@@ -27,6 +27,10 @@ router.post(
   controller.sendMoney
 );
 
-router.get('/transaction-history/:id', controller.transactionHistory);
+router.get(
+  '/transaction-history',
+  checkAuth(...Object.values(Role)),
+  controller.transactionHistory
+);
 
 export default router;
