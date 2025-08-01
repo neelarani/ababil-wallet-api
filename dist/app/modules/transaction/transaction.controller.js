@@ -72,12 +72,10 @@ exports.sendMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, voi
     });
 }));
 exports.transactionHistory = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.params.id;
-    const result = yield service.transactionHistory(userId);
     (0, shared_1.sendResponse)(res, {
         success: true,
         status: shared_1.HTTP_CODE.OK,
         message: 'Transaction History retrieved successfully',
-        data: result,
+        data: yield service.transactionHistory(req.query, req.user),
     });
 }));

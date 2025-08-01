@@ -8,12 +8,12 @@ const zod_1 = __importDefault(require("zod"));
 const mongodb_1 = require("mongodb");
 exports.zTopUpMoneySchema = zod_1.default.object({
     amount: zod_1.default.number().refine(val => val !== 0, {
-        message: 'name is positive integer',
+        message: 'Amount is positive integer',
     }),
 });
 exports.zWithdrawSchema = zod_1.default.object({
     amount: zod_1.default.number().refine(val => val !== 0, {
-        message: 'name is positive integer',
+        message: 'Amount is positive integer',
     }),
 });
 exports.zSendMoneySchema = zod_1.default.object({

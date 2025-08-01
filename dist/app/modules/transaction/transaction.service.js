@@ -8,8 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transactionHistory = exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
@@ -18,8 +26,9 @@ const transaction_model_1 = require("./transaction.model");
 const errors_1 = require("../../../app/errors");
 const shared_1 = require("../../../shared");
 const wallet_model_1 = require("../wallet/wallet.model");
-const mongoose_1 = __importDefault(require("mongoose"));
-const user_model_1 = require("../user/user.model");
+const mongoose_1 = require("mongoose");
+const user_interface_1 = require("../user/user.interface");
+const mongoose_qb_1 = require("mongoose-qb");
 const topUpMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
     let wallet = yield wallet_model_1.Wallet.findOne({ user: decodedToken.userId });
     if (!wallet)
@@ -71,7 +80,7 @@ const sendMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, f
     if (decodedToken.userId === payload.receiverId) {
         throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, `Cannot send money to yourself`);
     }
-    const session = yield mongoose_1.default.startSession();
+    const session = yield (0, mongoose_1.startSession)();
     session.startTransaction();
     try {
         const senderWallet = yield wallet_model_1.Wallet.findOne({
@@ -90,14 +99,14 @@ const sendMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, f
         receiverWallet.balance += payload.amount;
         yield senderWallet.save({ session });
         yield receiverWallet.save({ session });
-        const transaction = yield transaction_model_1.Transaction.create([
+        const transaction = (yield transaction_model_1.Transaction.create([
             {
                 sender: decodedToken.userId,
                 receiver: payload.receiverId,
                 amount: payload.amount,
                 transactionType: transaction_interface_1.TransactionType.SEND_MONEY,
             },
-        ], { session });
+        ], { session }))[0];
         yield session.commitTransaction();
         session.endSession();
         return { transaction, senderWallet, receiverWallet };
@@ -109,11 +118,20 @@ const sendMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.sendMoney = sendMoney;
-const transactionHistory = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_model_1.User.findById(userId).populate('transaction');
-    if (!user) {
-        throw new errors_1.AppError(shared_1.HTTP_CODE.NOT_FOUND, 'User not found!');
-    }
-    return user;
+const transactionHistory = (query, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+    const _a = query || {}, { author_type, userId } = _a, rest = __rest(_a, ["author_type", "userId"]);
+    const isAdmin = [user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN].includes(decodedToken.role);
+    if (!author_type && !isAdmin)
+        throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, `You must provide author_type params in request, [e.g. ?author_type=sender, ?author_type=receiver]`);
+    query = isAdmin
+        ? Object.assign(Object.assign({}, rest), { [author_type]: userId }) : Object.assign({ [author_type]: decodedToken.userId }, rest);
+    return yield (0, mongoose_qb_1.useQuery)(transaction_model_1.Transaction, query, {
+        filter: true,
+        paginate: true,
+        populate: [
+            { path: 'sender', select: 'name email phone' },
+            { path: 'receiver', select: 'name email phone' },
+        ],
+    });
 });
 exports.transactionHistory = transactionHistory;
