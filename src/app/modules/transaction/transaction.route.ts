@@ -27,4 +27,6 @@ router.post(
   controller.sendMoney
 );
 
+router.get('/transaction-history/:id', controller.transactionHistory);
+
 export default router;

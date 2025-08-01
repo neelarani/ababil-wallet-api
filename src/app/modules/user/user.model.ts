@@ -38,6 +38,12 @@ const userSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: Collections.Wallet,
     },
+    transaction: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: Collections.Transaction,
+      },
+    ],
   },
 
   {

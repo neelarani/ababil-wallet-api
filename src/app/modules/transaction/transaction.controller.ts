@@ -34,3 +34,15 @@ export const sendMoney = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+export const transactionHistory = catchAsync(async (req, res) => {
+  const userId = req.params.id;
+  const result = await service.transactionHistory(userId);
+
+  sendResponse(res, {
+    success: true,
+    status: HTTP_CODE.OK,
+    message: 'Transaction History retrieved successfully',
+    data: result,
+  });
+});

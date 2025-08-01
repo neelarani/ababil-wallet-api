@@ -5,6 +5,7 @@ import { AppError } from '@/app/errors';
 import { HTTP_CODE } from '@/shared';
 import { Wallet } from '../wallet/wallet.model';
 import mongoose from 'mongoose';
+import { User } from '../user/user.model';
 
 export const topUpMoney = async (
   payload: ITransaction,
@@ -152,4 +153,14 @@ export const sendMoney = async (
     session.endSession();
     throw error;
   }
+};
+
+export const transactionHistory = async (userId: string) => {
+  const user = await User.findById(userId).populate('transaction');
+
+  if (!user) {
+    throw new AppError(HTTP_CODE.NOT_FOUND, 'User not found!');
+  }
+
+  return user;
 };

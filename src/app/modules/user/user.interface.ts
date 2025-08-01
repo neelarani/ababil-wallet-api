@@ -30,4 +30,5 @@ export interface IUser {
   role: Role;
   auths: Array<IAuthProvider>;
   wallet: Schema.Types.ObjectId;
+  transaction: Schema.Types.ObjectId;
 }
