@@ -20,4 +20,11 @@ router.post(
   controller.withdraw
 );
 
+router.post(
+  '/send-money',
+  checkAuth(Role.USER),
+  validateRequest(validator.zSendMoneySchema),
+  controller.sendMoney
+);
+
 export default router;

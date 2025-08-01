@@ -3,7 +3,6 @@ import * as service from './transaction.service';
 import { JwtPayload } from 'jsonwebtoken';
 import { ITransaction } from './transaction.interface';
 import { IWallet } from '../wallet/wallet.interface';
-import { withdrawMoney } from '../transaction/transaction.service';
 
 export const topUpMoney = catchAsync(async (req, res) => {
   sendResponse<{ transaction: ITransaction; wallet: IWallet }>(res, {
@@ -15,12 +14,23 @@ export const topUpMoney = catchAsync(async (req, res) => {
 });
 
 export const withdraw = catchAsync(async (req, res) => {
-  const result = await withdrawMoney(req.body, req.user as JwtPayload);
+  const result = await service.withdraw(req.body, req.user as JwtPayload);
 
   sendResponse(res, {
     success: true,
     status: HTTP_CODE.OK,
     message: 'Withdraw successful',
+    data: result,
+  });
+});
+
+export const sendMoney = catchAsync(async (req, res) => {
+  const result = await service.sendMoney(req.body, req.user as JwtPayload);
+
+  sendResponse(res, {
+    success: true,
+    status: HTTP_CODE.OK,
+    message: 'Money sent successfully',
     data: result,
   });
 });
