@@ -29,6 +29,12 @@ export const zCreateUserSchema = z.object({
           'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
       }
     ),
+
+  role: z
+    .enum([Role.USER, Role.AGENT])
+    .refine(val => !Object.values(val).includes(val), {
+      message: `Provided role must in ${Object.values(Role).join(', ')}`,
+    }),
 });
 
 export const zUpdateUserSchema = z.object({
@@ -67,6 +73,7 @@ export const zUpdateUserSchema = z.object({
       message: 'isVerified is must be boolean',
     })
     .optional(),
+
   role: z
     .enum(Object.values(Role))
     .refine(val => !Object.values(val).includes(val), {

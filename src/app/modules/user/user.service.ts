@@ -5,6 +5,7 @@ import { AppError } from '@/app/errors';
 import { ENV } from '@/config';
 import { JwtPayload } from 'jsonwebtoken';
 import { HTTP_CODE } from '@/shared';
+import { Wallet } from '../wallet/wallet.model';
 
 export const createUser = async (Payload: IUser) => {
   const { email, password, ...rest } = Payload;
@@ -22,14 +23,23 @@ export const createUser = async (Payload: IUser) => {
     bcryptjs.genSaltSync(ENV.BCRYPT_SALT_ROUND)
   );
 
-  const user = await User.create({
+  let user = await User.create({
     email,
     ...rest,
     auths: [authProvider],
     password: hashPassword,
   });
 
-  return user;
+  const wallet = await Wallet.create({
+    balance: ENV.WALLET_INITIAL_BALANCE,
+    user: user._id,
+  });
+
+  return await User.findByIdAndUpdate(
+    user._id,
+    { wallet: wallet._id },
+    { new: true }
+  );
 };
 
 export const updateUser = async (

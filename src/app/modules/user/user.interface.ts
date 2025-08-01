@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId, Schema } from 'mongoose';
 
 export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
@@ -29,4 +29,5 @@ export interface IUser {
   isVerified?: boolean;
   role: Role;
   auths: Array<IAuthProvider>;
+  wallet: Schema.Types.ObjectId;
 }

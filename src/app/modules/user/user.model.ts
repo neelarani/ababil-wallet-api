@@ -1,5 +1,6 @@
 import { model, Schema } from 'mongoose';
 import { IAuthProvider, IsActive, IUser, Role } from './user.interface';
+import { Collections } from '@/interface';
 
 const authProviderSchema = new Schema<IAuthProvider>(
   {
@@ -33,7 +34,12 @@ const userSchema = new Schema<IUser>(
     auths: {
       type: [authProviderSchema],
     },
+    wallet: {
+      type: Schema.Types.ObjectId,
+      ref: Collections.Wallet,
+    },
   },
+
   {
     timestamps: true,
     versionKey: false,
