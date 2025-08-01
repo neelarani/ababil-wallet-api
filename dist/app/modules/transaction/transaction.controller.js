@@ -42,10 +42,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withdraw = exports.topUpMoney = void 0;
+exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
 const shared_1 = require("../../../shared");
 const service = __importStar(require("./transaction.service"));
-const transaction_service_1 = require("../transaction/transaction.service");
 exports.topUpMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     (0, shared_1.sendResponse)(res, {
         success: true,
@@ -55,11 +54,20 @@ exports.topUpMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, vo
     });
 }));
 exports.withdraw = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield (0, transaction_service_1.withdrawMoney)(req.body, req.user);
+    const result = yield service.withdraw(req.body, req.user);
     (0, shared_1.sendResponse)(res, {
         success: true,
         status: shared_1.HTTP_CODE.OK,
         message: 'Withdraw successful',
+        data: result,
+    });
+}));
+exports.sendMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield service.sendMoney(req.body, req.user);
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.OK,
+        message: 'Money sent successfully',
         data: result,
     });
 }));

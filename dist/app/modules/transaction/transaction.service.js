@@ -8,13 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withdrawMoney = exports.topUpMoney = void 0;
+exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
 const transaction_interface_1 = require("./transaction.interface");
 const transaction_model_1 = require("./transaction.model");
 const errors_1 = require("../../../app/errors");
 const shared_1 = require("../../../shared");
 const wallet_model_1 = require("../wallet/wallet.model");
+const mongoose_1 = __importDefault(require("mongoose"));
 const topUpMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
     let wallet = yield wallet_model_1.Wallet.findOne({ user: decodedToken.userId });
     if (!wallet)
@@ -37,7 +41,7 @@ const topUpMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, 
     };
 });
 exports.topUpMoney = topUpMoney;
-const withdrawMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+const withdraw = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
     const wallet = yield wallet_model_1.Wallet.findOne({ user: decodedToken.userId });
     if (!wallet)
         throw new errors_1.AppError(shared_1.HTTP_CODE.INTERNAL_SERVER_ERROR, `Wallet not Found!`);
@@ -61,4 +65,46 @@ const withdrawMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 
         wallet: updatedWallet,
     };
 });
-exports.withdrawMoney = withdrawMoney;
+exports.withdraw = withdraw;
+const sendMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+    if (decodedToken.userId === payload.receiverId) {
+        throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, `Cannot send money to yourself`);
+    }
+    const session = yield mongoose_1.default.startSession();
+    session.startTransaction();
+    try {
+        const senderWallet = yield wallet_model_1.Wallet.findOne({
+            user: decodedToken.userId,
+        }).session(session);
+        const receiverWallet = yield wallet_model_1.Wallet.findOne({
+            user: payload.receiverId,
+        }).session(session);
+        if (!senderWallet || !receiverWallet) {
+            throw new errors_1.AppError(shared_1.HTTP_CODE.NOT_FOUND, `Sender or receiver wallet not found`);
+        }
+        if (senderWallet.balance < payload.amount) {
+            throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, `Insufficient balance in wallet`);
+        }
+        senderWallet.balance -= payload.amount;
+        receiverWallet.balance += payload.amount;
+        yield senderWallet.save({ session });
+        yield receiverWallet.save({ session });
+        const transaction = yield transaction_model_1.Transaction.create([
+            {
+                sender: decodedToken.userId,
+                receiver: payload.receiverId,
+                amount: payload.amount,
+                transactionType: transaction_interface_1.TransactionType.SEND_MONEY,
+            },
+        ], { session });
+        yield session.commitTransaction();
+        session.endSession();
+        return { transaction, senderWallet, receiverWallet };
+    }
+    catch (error) {
+        yield session.abortTransaction();
+        session.endSession();
+        throw error;
+    }
+});
+exports.sendMoney = sendMoney;
