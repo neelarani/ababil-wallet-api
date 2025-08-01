@@ -35,6 +35,12 @@ const userSchema = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.ObjectId,
         ref: interface_1.Collections.Wallet,
     },
+    transaction: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: interface_1.Collections.Transaction,
+        },
+    ],
 }, {
     timestamps: true,
     versionKey: false,

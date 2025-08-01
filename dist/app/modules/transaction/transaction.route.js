@@ -42,4 +42,5 @@ const router = (0, express_1.Router)();
 router.post('/top-up', (0, middlewares_1.checkAuth)(user_interface_1.Role.USER), (0, middlewares_1.validateRequest)(validator.zTopUpMoneySchema), controller.topUpMoney);
 router.post('/withdraw', (0, middlewares_1.checkAuth)(user_interface_1.Role.USER), (0, middlewares_1.validateRequest)(validator.zTopUpMoneySchema), controller.withdraw);
 router.post('/send-money', (0, middlewares_1.checkAuth)(user_interface_1.Role.USER), (0, middlewares_1.validateRequest)(validator.zSendMoneySchema), controller.sendMoney);
+router.get('/transaction-history/:id', controller.transactionHistory);
 exports.default = router;

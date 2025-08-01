@@ -42,7 +42,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
+exports.transactionHistory = exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
 const shared_1 = require("../../../shared");
 const service = __importStar(require("./transaction.service"));
 exports.topUpMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -68,6 +68,16 @@ exports.sendMoney = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, voi
         success: true,
         status: shared_1.HTTP_CODE.OK,
         message: 'Money sent successfully',
+        data: result,
+    });
+}));
+exports.transactionHistory = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id;
+    const result = yield service.transactionHistory(userId);
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.OK,
+        message: 'Transaction History retrieved successfully',
         data: result,
     });
 }));

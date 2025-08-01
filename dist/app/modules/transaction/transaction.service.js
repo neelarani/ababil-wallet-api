@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
+exports.transactionHistory = exports.sendMoney = exports.withdraw = exports.topUpMoney = void 0;
 const transaction_interface_1 = require("./transaction.interface");
 const transaction_model_1 = require("./transaction.model");
 const errors_1 = require("../../../app/errors");
 const shared_1 = require("../../../shared");
 const wallet_model_1 = require("../wallet/wallet.model");
 const mongoose_1 = __importDefault(require("mongoose"));
+const user_model_1 = require("../user/user.model");
 const topUpMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
     let wallet = yield wallet_model_1.Wallet.findOne({ user: decodedToken.userId });
     if (!wallet)
@@ -108,3 +109,11 @@ const sendMoney = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.sendMoney = sendMoney;
+const transactionHistory = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield user_model_1.User.findById(userId).populate('transaction');
+    if (!user) {
+        throw new errors_1.AppError(shared_1.HTTP_CODE.NOT_FOUND, 'User not found!');
+    }
+    return user;
+});
+exports.transactionHistory = transactionHistory;
