@@ -33,24 +33,12 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.router = void 0;
+const middlewares_1 = require("../../../app/middlewares");
 const express_1 = require("express");
-const modules = __importStar(require("../../app/modules"));
-exports.router = (0, express_1.Router)();
-const moduleRoutes = [
-    {
-        path: '/auth',
-        route: modules.AuthRoutes,
-    },
-    {
-        path: '/user',
-        route: modules.UserRoutes,
-    },
-    {
-        path: '/transaction',
-        route: modules.TransactionRoutes,
-    },
-];
-moduleRoutes.forEach(route => {
-    exports.router.use(route.path, route.route);
-});
+const validator = __importStar(require("./transaction.validation"));
+const controller = __importStar(require("./transaction.controller"));
+const user_interface_1 = require("../user/user.interface");
+const router = (0, express_1.Router)();
+router.post('/top-up', (0, middlewares_1.checkAuth)(user_interface_1.Role.USER), (0, middlewares_1.validateRequest)(validator.zTopUpMoneySchema), controller.topUpMoney);
+router.post('/withdraw', (0, middlewares_1.checkAuth)(user_interface_1.Role.USER), (0, middlewares_1.validateRequest)(validator.zTopUpMoneySchema), controller.withdraw);
+exports.default = router;

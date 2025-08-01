@@ -30,6 +30,7 @@ const user_model_1 = require("./user.model");
 const errors_1 = require("../../../app/errors");
 const config_1 = require("../../../config");
 const shared_1 = require("../../../shared");
+const wallet_model_1 = require("../wallet/wallet.model");
 const createUser = (Payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = Payload, rest = __rest(Payload, ["email", "password"]);
     if (yield user_model_1.User.exists({ email }))
@@ -39,8 +40,12 @@ const createUser = (Payload) => __awaiter(void 0, void 0, void 0, function* () {
         providerId: email,
     };
     const hashPassword = bcryptjs_1.default.hashSync(password, bcryptjs_1.default.genSaltSync(config_1.ENV.BCRYPT_SALT_ROUND));
-    const user = yield user_model_1.User.create(Object.assign(Object.assign({ email }, rest), { auths: [authProvider], password: hashPassword }));
-    return user;
+    let user = yield user_model_1.User.create(Object.assign(Object.assign({ email }, rest), { auths: [authProvider], password: hashPassword }));
+    const wallet = yield wallet_model_1.Wallet.create({
+        balance: config_1.ENV.WALLET_INITIAL_BALANCE,
+        user: user._id,
+    });
+    return yield user_model_1.User.findByIdAndUpdate(user._id, { wallet: wallet._id }, { new: true });
 });
 exports.createUser = createUser;
 const updateUser = (userId, payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {

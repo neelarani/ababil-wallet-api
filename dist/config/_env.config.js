@@ -92,6 +92,23 @@ const envSchema = zod_1.z.object({
             ? `SUPER_ADMIN_PASSWORDis required`
             : `SUPER_ADMIN_PASSWORD must be string`,
     }),
+    WALLET_INITIAL_BALANCE: zod_1.z
+        .string({
+        error: issue => issue.input === void 0
+            ? `WALLET_INITIAL_BALANCE is required`
+            : `WALLET_INITIAL_BALANCE must be number`,
+    })
+        .transform((val, ctx) => {
+        const parsed = parseInt(val, 10);
+        if (isNaN(parsed)) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'WALLET_INITIAL_BALANCE must be number',
+            });
+            return zod_1.z.NEVER;
+        }
+        return parsed;
+    }),
 });
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {

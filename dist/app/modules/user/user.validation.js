@@ -27,6 +27,11 @@ exports.zCreateUserSchema = zod_1.z.object({
         .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
         message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
     }),
+    role: zod_1.z
+        .enum([user_interface_1.Role.USER, user_interface_1.Role.AGENT])
+        .refine(val => !Object.values(val).includes(val), {
+        message: `Provided role must in ${Object.values(user_interface_1.Role).join(', ')}`,
+    }),
 });
 exports.zUpdateUserSchema = zod_1.z.object({
     name: zod_1.z

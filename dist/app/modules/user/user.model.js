@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = require("mongoose");
 const user_interface_1 = require("./user.interface");
+const interface_1 = require("../../../interface");
 const authProviderSchema = new mongoose_1.Schema({
     provider: { type: String, required: true },
     providerId: { type: String, required: true },
@@ -29,6 +30,10 @@ const userSchema = new mongoose_1.Schema({
     isVerified: { type: Boolean, default: false },
     auths: {
         type: [authProviderSchema],
+    },
+    wallet: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: interface_1.Collections.Wallet,
     },
 }, {
     timestamps: true,
