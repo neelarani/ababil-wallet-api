@@ -11,6 +11,10 @@ const walletSchema = new Schema<IWallet>({
     type: Number,
     default: 50,
   },
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 export const Wallet = model<IWallet>(Collections.Wallet, walletSchema);

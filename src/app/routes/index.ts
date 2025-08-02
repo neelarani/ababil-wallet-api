@@ -16,6 +16,10 @@ const moduleRoutes = [
     path: '/transaction',
     route: modules.TransactionRoutes,
   },
+  {
+    path: '/wallet',
+    route: modules.WalletRoutes,
+  },
 ];
 
 moduleRoutes.forEach(route => {

@@ -46,3 +46,21 @@ export const transactionHistory = catchAsync(async (req, res) => {
     ),
   });
 });
+
+export const cashIn = catchAsync(async (req, res) => {
+  sendResponse(res, {
+    success: true,
+    status: HTTP_CODE.OK,
+    message: 'Cash In Successful',
+    data: await service.cashIn(req.body, req.user as JwtPayload),
+  });
+});
+
+export const cashOut = catchAsync(async (req, res) => {
+  sendResponse(res, {
+    success: true,
+    status: HTTP_CODE.OK,
+    message: 'Cash Out Successful',
+    data: await service.cashOut(req.body, req.user as JwtPayload),
+  });
+});

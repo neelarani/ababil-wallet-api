@@ -8,7 +8,7 @@ const router = Router();
 
 router.post(
   '/top-up',
-  checkAuth(Role.USER),
+  checkAuth(Role.USER, Role.AGENT),
   validateRequest(validator.zTopUpMoneySchema),
   controller.topUpMoney
 );
@@ -31,6 +31,20 @@ router.get(
   '/transaction-history',
   checkAuth(...Object.values(Role)),
   controller.transactionHistory
+);
+
+router.post(
+  '/cash-in',
+  validateRequest(validator.zCashInSchema),
+  checkAuth(Role.AGENT),
+  controller.cashIn
+);
+
+router.post(
+  '/cash-out',
+  validateRequest(validator.zCashOutSchema),
+  checkAuth(Role.USER),
+  controller.cashOut
 );
 
 export default router;

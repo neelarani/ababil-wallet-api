@@ -1,5 +1,6 @@
 import z from 'zod';
 import { ObjectId } from 'mongodb';
+import { isValidObjectId } from 'mongoose';
 
 export const zTopUpMoneySchema = z.object({
   amount: z.number().refine(val => val !== 0, {
@@ -18,6 +19,30 @@ export const zSendMoneySchema = z.object({
     message: 'Invalid MongoDB ObjectId',
   }),
 
+  amount: z
+    .number()
+    .refine(val => val !== 0, {
+      message: 'name is positive integer',
+    })
+    .min(1, 'Amount must be at least 1'),
+});
+
+export const zCashInSchema = z.object({
+  receiverId: z.string().refine(val => isValidObjectId(val), {
+    message: 'Invalid MongoDB ObjectId',
+  }),
+  amount: z
+    .number()
+    .refine(val => val !== 0, {
+      message: 'name is positive integer',
+    })
+    .min(1, 'Amount must be at least 1'),
+});
+
+export const zCashOutSchema = z.object({
+  receiverId: z.string().refine(val => isValidObjectId(val), {
+    message: 'Invalid MongoDB ObjectId',
+  }),
   amount: z
     .number()
     .refine(val => val !== 0, {
