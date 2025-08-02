@@ -17,3 +17,12 @@ export const zCredentialLoginSchema = z.object({
       }
     ),
 });
+
+export const zGetVerifyUserSecretSchema = z.object({
+  email: z
+    .string()
+    .email('Invalid email format')
+    .refine(val => val.trim() !== '', {
+      message: 'email is required',
+    }),
+});

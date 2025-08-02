@@ -10,5 +10,12 @@ router.post(
   validateRequest(validator.zCredentialLoginSchema),
   controller.credentialLogin
 );
+router.post(
+  '/get-verify-token',
+  validateRequest(validator.zGetVerifyUserSecretSchema),
+  controller.getVerifyUserSecret
+);
+
+router.get('/verify', controller.verifyUser);
 
 export default router;

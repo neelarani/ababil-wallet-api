@@ -4,6 +4,8 @@ import passport from 'passport';
 import { IUser } from '../user/user.interface';
 import { createUserTokens } from '@/shared/utils/user.tokens';
 import { setAuthCookie } from '@/shared/utils/-setCookie';
+import * as service from './auth.service';
+import { ENV } from '@/config';
 
 export const credentialLogin = catchAsync(async (req, res, next) => {
   passport.authenticate(
@@ -30,4 +32,26 @@ export const credentialLogin = catchAsync(async (req, res, next) => {
       });
     }
   )(req, res, next);
+});
+
+export const getVerifyUserSecret = catchAsync(async (req, res) => {
+  sendResponse(res, {
+    success: true,
+    status: HTTP_CODE.OK,
+    message: `User verification link has been sended successfully!`,
+    data: await service.getVerifyUserSecret(req.body.email),
+  });
+});
+
+export const verifyUser = catchAsync(async (req, res) => {
+  const verifiedUser = await service.verifyUser(
+    (req.query as Record<string, string>).secret
+  );
+
+  return !verifiedUser
+    ? res.redirect(`${ENV.FRONTEND_BASE_URL}/login`)
+    : (() => {
+        setAuthCookie(res, createUserTokens(verifiedUser));
+        res.redirect(`${ENV.FRONTEND_BASE_URL}`);
+      })();
 });
