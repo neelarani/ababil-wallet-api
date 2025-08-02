@@ -109,6 +109,53 @@ const envSchema = zod_1.z.object({
         }
         return parsed;
     }),
+    EMAIL_SENDER_SMTP_USER: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `EMAIL_SENDER_SMTP_USER is required`
+            : `EMAIL_SENDER_SMTP_USER must be string`,
+    }),
+    EMAIL_SENDER_SMTP_PASS: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `EMAIL_SENDER_SMTP_PASS is required`
+            : `EMAIL_SENDER_SMTP_PASS must be string`,
+    }),
+    EMAIL_SENDER_SMTP_PORT: zod_1.z
+        .string({
+        error: issue => issue.input === void 0
+            ? `EMAIL_SENDER_SMTP_PASS is required`
+            : `EMAIL_SENDER_SMTP_PASS must be string`,
+    })
+        .transform((val, ctx) => {
+        const parsed = parseInt(val, 10);
+        if (isNaN(parsed)) {
+            ctx.addIssue({
+                code: 'custom',
+                message: 'EMAIL_SENDER_SMTP_PORT must be a number',
+            });
+            return zod_1.z.NEVER;
+        }
+        return parsed;
+    }),
+    EMAIL_SENDER_SMTP_HOST: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `EMAIL_SENDER_SMTP_HOST is required`
+            : `EMAIL_SENDER_SMTP_HOST must be string`,
+    }),
+    BACKEND_BASE_URL: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `BACKEND_BASE_URL is required`
+            : `BACKEND_BASE_URL must be string`,
+    }),
+    USER_VERIFY_SECRET: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `USER_VERIFY_SECRET is required`
+            : `USER_VERIFY_SECRET must be string`,
+    }),
+    FRONTEND_BASE_URL: zod_1.z.string({
+        error: issue => issue.input === void 0
+            ? `FRONTEND_BASE_URL is required`
+            : `FRONTEND_BASE_URL must be string`,
+    }),
 });
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {

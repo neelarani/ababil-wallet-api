@@ -39,4 +39,6 @@ const middlewares_1 = require("../../../app/middlewares");
 const validator = __importStar(require("./auth.validation"));
 const router = (0, express_1.Router)();
 router.post('/login', (0, middlewares_1.validateRequest)(validator.zCredentialLoginSchema), controller.credentialLogin);
+router.post('/get-verify-token', (0, middlewares_1.validateRequest)(validator.zGetVerifyUserSecretSchema), controller.getVerifyUserSecret);
+router.get('/verify', controller.verifyUser);
 exports.default = router;
