@@ -32,13 +32,27 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const controller = __importStar(require("./auth.controller"));
 const middlewares_1 = require("../../../app/middlewares");
 const validator = __importStar(require("./auth.validation"));
+const passport_1 = __importDefault(require("passport"));
+const config_1 = require("../../../config");
+const user_interface_1 = require("../user/user.interface");
 const router = (0, express_1.Router)();
 router.post('/login', (0, middlewares_1.validateRequest)(validator.zCredentialLoginSchema), controller.credentialLogin);
 router.post('/get-verify-token', (0, middlewares_1.validateRequest)(validator.zGetVerifyUserSecretSchema), controller.getVerifyUserSecret);
 router.get('/verify', controller.verifyUser);
+router.post('/set-password', (0, middlewares_1.checkAuth)(...Object.values(user_interface_1.Role)), controller.setPassword);
+router.post('/change-password', (0, middlewares_1.checkAuth)(...Object.values(user_interface_1.Role)), (0, middlewares_1.validateRequest)(validator.zChangePasswordSchema), controller.changePassword);
+router.post('/forgot-password', controller.forgotPassword);
+router.post('/reset-password', (0, middlewares_1.checkAuth)(...Object.values(user_interface_1.Role)), (0, middlewares_1.validateRequest)(validator.zResetPasswordSchema), controller.resetPassword);
+router.get('/google', controller.googleLogin);
+router.get('/google/callback', passport_1.default.authenticate('google', {
+    failureRedirect: `${config_1.ENV.FRONTEND_BASE_URL}/login?error=There was an server side issue!`,
+}), controller.googleCallback);
 exports.default = router;

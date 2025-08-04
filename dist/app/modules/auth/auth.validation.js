@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zGetVerifyUserSecretSchema = exports.zCredentialLoginSchema = void 0;
+exports.zChangePasswordSchema = exports.zResetPasswordSchema = exports.zGetVerifyUserSecretSchema = exports.zCredentialLoginSchema = void 0;
+const mongoose_1 = require("mongoose");
 const zod_1 = __importDefault(require("zod"));
 exports.zCredentialLoginSchema = zod_1.default.object({
     email: zod_1.default
@@ -24,5 +25,29 @@ exports.zGetVerifyUserSecretSchema = zod_1.default.object({
         .email('Invalid email format')
         .refine(val => val.trim() !== '', {
         message: 'email is required',
+    }),
+});
+exports.zResetPasswordSchema = zod_1.default.object({
+    id: zod_1.default
+        .string('requestAgentId is required')
+        .refine(val => (0, mongoose_1.isValidObjectId)(val.trim()), {
+        message: 'id must be a valid ObjectId',
+    }),
+    newPassword: zod_1.default
+        .string()
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/, {
+        message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
+    }),
+});
+exports.zChangePasswordSchema = zod_1.default.object({
+    oldPassword: zod_1.default
+        .string()
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/, {
+        message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
+    }),
+    newPassword: zod_1.default
+        .string()
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/, {
+        message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
     }),
 });

@@ -56,12 +56,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyUser = exports.getVerifyUserSecret = exports.credentialLogin = void 0;
+exports.googleCallback = exports.googleLogin = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.setPassword = exports.verifyUser = exports.getVerifyUserSecret = exports.logout = exports.getNewAccessToken = exports.credentialLogin = void 0;
 const errors_1 = require("../../../app/errors");
 const shared_1 = require("../../../shared");
 const passport_1 = __importDefault(require("passport"));
-const user_tokens_1 = require("../../../shared/utils/user.tokens");
-const _setCookie_1 = require("../../../shared/utils/-setCookie");
 const service = __importStar(require("./auth.service"));
 const config_1 = require("../../../config");
 exports.credentialLogin = (0, shared_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -71,9 +69,8 @@ exports.credentialLogin = (0, shared_1.catchAsync)((req, res, next) => __awaiter
         if (!user)
             return next(new errors_1.AppError(shared_1.HTTP_CODE.UNAUTHORIZED, info === null || info === void 0 ? void 0 : info.message));
         const _a = user.toObject(), { password } = _a, rest = __rest(_a, ["password"]);
-        console.log(password);
-        const tokens = (0, user_tokens_1.createUserTokens)(user);
-        (0, _setCookie_1.setAuthCookie)(res, tokens);
+        const tokens = (0, shared_1.createUserTokens)(user);
+        (0, shared_1.setAuthCookie)(res, tokens);
         (0, shared_1.sendResponse)(res, {
             success: true,
             status: shared_1.HTTP_CODE.CREATED,
@@ -81,6 +78,33 @@ exports.credentialLogin = (0, shared_1.catchAsync)((req, res, next) => __awaiter
             data: { tokens, user: rest },
         });
     }))(req, res, next);
+}));
+exports.getNewAccessToken = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const tokenInfo = yield service.getNewAccessToken(req.cookies.refreshToken);
+    (0, shared_1.setAuthCookie)(res, tokenInfo);
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.CREATED,
+        message: 'New access token successfully generated',
+        data: tokenInfo,
+    });
+}));
+exports.logout = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+    });
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+    });
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.OK,
+        message: 'Logged Out',
+    });
 }));
 exports.getVerifyUserSecret = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     (0, shared_1.sendResponse)(res, {
@@ -95,7 +119,57 @@ exports.verifyUser = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, vo
     return !verifiedUser
         ? res.redirect(`${config_1.ENV.FRONTEND_BASE_URL}/login`)
         : (() => {
-            (0, _setCookie_1.setAuthCookie)(res, (0, user_tokens_1.createUserTokens)(verifiedUser));
+            (0, shared_1.setAuthCookie)(res, (0, shared_1.createUserTokens)(verifiedUser));
             res.redirect(`${config_1.ENV.FRONTEND_BASE_URL}`);
         })();
+}));
+exports.setPassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.CREATED,
+        message: 'Password has been reset successfully!',
+        data: yield service.setPassword(req.user.userId, (_a = req.body) === null || _a === void 0 ? void 0 : _a.password),
+    });
+}));
+exports.forgotPassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.CREATED,
+        message: 'Password has been reset successfully!',
+        data: yield service.forgotPassword((_a = req.body) === null || _a === void 0 ? void 0 : _a.email),
+    });
+}));
+exports.resetPassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.CREATED,
+        message: 'Password has been reset successfully!',
+        data: yield service.resetPassword(req.body, req.user),
+    });
+}));
+exports.changePassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, shared_1.sendResponse)(res, {
+        success: true,
+        status: shared_1.HTTP_CODE.CREATED,
+        message: 'Password has been changed successfully!',
+        data: yield service.changePassword(req.body.oldPassword, req.body.newPassword, req.user),
+    });
+}));
+exports.googleLogin = (0, shared_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const redirect = req.query.redirect || '/';
+    passport_1.default.authenticate('google', {
+        scope: ['profile', 'email'],
+        state: redirect,
+    })(req, res, next);
+}));
+exports.googleCallback = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (!req.user)
+        throw new errors_1.AppError(shared_1.HTTP_CODE.NOT_FOUND, 'User Not Found!');
+    const state = (_a = req.query) === null || _a === void 0 ? void 0 : _a.state;
+    const tokenInfo = (0, shared_1.createUserTokens)(req.user);
+    (0, shared_1.setAuthCookie)(res, tokenInfo);
+    res.redirect(`${config_1.ENV.FRONTEND_BASE_URL}/${!state.startsWith('/') ? state : ''}`);
 }));
