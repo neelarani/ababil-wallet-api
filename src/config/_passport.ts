@@ -1,8 +1,13 @@
 import passport from 'passport';
-import { IsActive } from '@/app/modules/user/user.interface';
+import { IsActive, Role } from '@/app/modules/user/user.interface';
 import { User } from '@/app/modules/user/user.model';
 import bcryptjs from 'bcryptjs';
 import { Strategy as LocalStrategy } from 'passport-local';
+import {
+  Strategy as GoogleStrategy,
+  Profile as GProfile,
+} from 'passport-google-oauth20';
+import { ENV } from './_env.config';
 
 passport.use(
   new LocalStrategy(
@@ -52,6 +57,54 @@ passport.use(
       } catch (error) {
         console.log(error);
         done(error);
+      }
+    }
+  )
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: ENV.GOOGLE_CLIENT_ID,
+      clientSecret: ENV.GOOGLE_CLIENT_SECRET,
+      callbackURL: ENV.GOOGLE_CALLBACK_URL,
+    },
+    async (accessToken, refreshToken, profile: GProfile, done) => {
+      try {
+        const email = profile.emails?.[0].value;
+
+        if (!email) return done(null, false, { message: 'No email found' });
+
+        let user = await User.findOne({ email });
+
+        if (user && !user.isVerified)
+          return done(null, false, { message: 'User is not verified' });
+
+        if (
+          user &&
+          (user.isActive === IsActive.BLOCKED ||
+            user.isActive === IsActive.INACTIVE)
+        )
+          return done(null, false, { message: `User is ${user.isActive}` });
+
+        if (user && user.isDeleted)
+          return done(null, false, { message: 'User is deleted' });
+
+        if (!user) {
+          user = await User.create({
+            email,
+            name: profile.displayName,
+            picture: profile.photos?.[0].value,
+            role: Role.USER,
+            isVerified: true,
+            auths: [{ provider: 'google', providerId: profile.id }],
+          });
+        }
+
+        return done(null, user, { message: 'User has been created' });
+      } catch (error) {
+        console.log('Google Strategy Error:\n', error);
+        return done(error);
       }
     }
   )
