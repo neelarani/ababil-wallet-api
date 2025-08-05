@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zUpdateUserSchema = exports.zCreateUserSchema = void 0;
+exports.zUpdateToAgentSchema = exports.zUpdateUserSchema = exports.zCreateUserSchema = void 0;
 const zod_1 = require("zod");
 const user_interface_1 = require("./user.interface");
+const mongoose_1 = require("mongoose");
 exports.zCreateUserSchema = zod_1.z.object({
     name: zod_1.z
         .string()
@@ -24,13 +25,8 @@ exports.zCreateUserSchema = zod_1.z.object({
     }),
     password: zod_1.z
         .string()
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/, {
         message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
-    }),
-    role: zod_1.z
-        .enum([user_interface_1.Role.USER, user_interface_1.Role.AGENT])
-        .refine(val => !Object.values(val).includes(val), {
-        message: `Provided role must in ${Object.values(user_interface_1.Role).join(', ')}`,
     }),
 });
 exports.zUpdateUserSchema = zod_1.z.object({
@@ -43,7 +39,7 @@ exports.zUpdateUserSchema = zod_1.z.object({
         .optional(),
     password: zod_1.z
         .string()
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/, {
         message: 'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
     })
         .optional(),
@@ -71,4 +67,16 @@ exports.zUpdateUserSchema = zod_1.z.object({
         message: `Provided role must in ${Object.values(user_interface_1.Role).join(', ')}`,
     })
         .optional(),
+});
+exports.zUpdateToAgentSchema = zod_1.z.object({
+    requestAgentId: zod_1.z
+        .string('requestAgentId is required')
+        .refine(val => (0, mongoose_1.isValidObjectId)(val.trim()), {
+        message: 'requestAgentId must be a valid ObjectId',
+    }),
+    status: zod_1.z
+        .enum(Object.values(user_interface_1.IToAgentStatus))
+        .refine(val => !Object.values(val).includes(val), {
+        message: `Provided status must in ${Object.values(user_interface_1.IToAgentStatus).join(', ')}`,
+    }),
 });

@@ -137,7 +137,7 @@ exports.forgotPassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0
     (0, shared_1.sendResponse)(res, {
         success: true,
         status: shared_1.HTTP_CODE.CREATED,
-        message: 'Password has been reset successfully!',
+        message: 'Reset Password Email has been sended!',
         data: yield service.forgotPassword((_a = req.body) === null || _a === void 0 ? void 0 : _a.email),
     });
 }));
@@ -146,7 +146,7 @@ exports.resetPassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0,
         success: true,
         status: shared_1.HTTP_CODE.CREATED,
         message: 'Password has been reset successfully!',
-        data: yield service.resetPassword(req.body, req.user),
+        data: yield service.resetPassword(req.body.password, req.query.resetToken),
     });
 }));
 exports.changePassword = (0, shared_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

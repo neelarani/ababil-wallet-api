@@ -6,4 +6,5 @@ var Collections;
     Collections["User"] = "User";
     Collections["Wallet"] = "Wallet";
     Collections["Transaction"] = "Transaction";
+    Collections["ToAgent"] = "ToAgent";
 })(Collections || (exports.Collections = Collections = {}));

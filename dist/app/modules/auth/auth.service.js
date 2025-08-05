@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePassword = exports.setPassword = exports.forgotPassword = exports.resetPassword = exports.getNewAccessToken = exports.verifyUser = exports.getVerifyUserSecret = void 0;
+exports.changePassword = exports.setPassword = exports.resetPassword = exports.forgotPassword = exports.getNewAccessToken = exports.verifyUser = exports.getVerifyUserSecret = void 0;
 const errors_1 = require("../../../app/errors");
 const shared_1 = require("../../../shared");
 const user_model_1 = require("../user/user.model");
@@ -26,7 +26,7 @@ const getVerifyUserSecret = (email) => __awaiter(void 0, void 0, void 0, functio
         throw new errors_1.AppError(shared_1.HTTP_CODE.NOT_FOUND, 'User not found!');
     if (user.isVerified)
         throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, 'User already verified!');
-    const secret = jsonwebtoken_1.default.sign({ id: user._id }, config_1.ENV.USER_VERIFY_SECRET, {
+    const secret = jsonwebtoken_1.default.sign({ id: user._id }, config_1.ENV.JWT_USER_VERIFY_SECRET, {
         expiresIn: '5m',
     });
     const info = yield (0, shared_1.sendMail)({
@@ -46,7 +46,7 @@ const getVerifyUserSecret = (email) => __awaiter(void 0, void 0, void 0, functio
 exports.getVerifyUserSecret = getVerifyUserSecret;
 const verifyUser = (secret) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = jsonwebtoken_1.default.verify(secret, config_1.ENV.USER_VERIFY_SECRET);
+        const { id } = jsonwebtoken_1.default.verify(secret, config_1.ENV.JWT_USER_VERIFY_SECRET);
         const user = yield user_model_1.User.findByIdAndUpdate(id, { isVerified: true }, { new: true });
         return user;
     }
@@ -62,19 +62,6 @@ const getNewAccessToken = (refreshToken) => __awaiter(void 0, void 0, void 0, fu
     };
 });
 exports.getNewAccessToken = getNewAccessToken;
-const resetPassword = (payload, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
-    if (payload.id != decodedToken.userId) {
-        throw new errors_1.AppError(401, 'You can not reset your password');
-    }
-    const user = yield user_model_1.User.findById(decodedToken.userId);
-    if (!user) {
-        throw new errors_1.AppError(401, 'User does not exist');
-    }
-    const hashedPassword = yield bcryptjs_1.default.hash(payload.newPassword, Number(config_1.ENV.BCRYPT_SALT_ROUND));
-    user.password = hashedPassword;
-    yield user.save();
-});
-exports.resetPassword = resetPassword;
 const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* () {
     if (!email)
         throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_GATEWAY, `Email is required`);
@@ -89,10 +76,8 @@ const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
         throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, 'User is deleted');
     const jwtPayload = {
         userId: user._id,
-        email: user.email,
-        role: user.role,
     };
-    const resetToken = jsonwebtoken_1.default.sign(jwtPayload, config_1.ENV.JWT_ACCESS_SECRET, {
+    const resetToken = jsonwebtoken_1.default.sign(jwtPayload, config_1.ENV.JWT_RESET_PASSWORD_SECRET, {
         expiresIn: '10m',
     });
     const info = yield (0, shared_1.sendMail)({
@@ -102,7 +87,7 @@ const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
             name: 'forgetPassword',
             data: {
                 name: user.name,
-                resetUILink: `${config_1.ENV.FRONTEND_BASE_URL}/reset-password?id=${user._id}&token=${resetToken}`,
+                resetUILink: `${config_1.ENV.FRONTEND_BASE_URL}/reset-password?resetToken=${resetToken}`,
             },
         },
     });
@@ -110,6 +95,17 @@ const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
         throw new errors_1.AppError(shared_1.HTTP_CODE.INTERNAL_SERVER_ERROR, `Failed to send reset email Link`);
 });
 exports.forgotPassword = forgotPassword;
+const resetPassword = (password, resetToken) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId } = jsonwebtoken_1.default.verify(resetToken, config_1.ENV.JWT_RESET_PASSWORD_SECRET);
+    let user = yield user_model_1.User.findById(userId);
+    if (!user)
+        throw new errors_1.AppError(shared_1.HTTP_CODE.BAD_REQUEST, `User not found!`);
+    password = bcryptjs_1.default.hashSync(password, bcryptjs_1.default.genSaltSync(config_1.ENV.BCRYPT_SALT_ROUND));
+    user = yield user_model_1.User.findByIdAndUpdate(userId, { password }, { new: true, runValidators: true });
+    if (!user)
+        throw new errors_1.AppError(shared_1.HTTP_CODE.INTERNAL_SERVER_ERROR, `Failed to reset password`);
+});
+exports.resetPassword = resetPassword;
 const setPassword = (userId, plainPassword) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield user_model_1.User.findById(userId);
     if (!user)
