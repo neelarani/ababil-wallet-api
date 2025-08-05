@@ -14,7 +14,7 @@ export const getVerifyUserSecret = async (email: string) => {
   if (user.isVerified)
     throw new AppError(HTTP_CODE.BAD_REQUEST, 'User already verified!');
 
-  const secret = jwt.sign({ id: user._id }, ENV.USER_VERIFY_SECRET, {
+  const secret = jwt.sign({ id: user._id }, ENV.JWT_USER_VERIFY_SECRET, {
     expiresIn: '5m',
   });
 
@@ -39,7 +39,7 @@ export const getVerifyUserSecret = async (email: string) => {
 
 export const verifyUser = async (secret: string) => {
   try {
-    const { id } = jwt.verify(secret, ENV.USER_VERIFY_SECRET) as {
+    const { id } = jwt.verify(secret, ENV.JWT_USER_VERIFY_SECRET) as {
       id: string;
       email: string;
     };
@@ -64,29 +64,6 @@ export const getNewAccessToken = async (refreshToken: string) => {
   };
 };
 
-export const resetPassword = async (
-  payload: { newPassword: string; id: string },
-  decodedToken: JwtPayload
-) => {
-  if (payload.id != decodedToken.userId) {
-    throw new AppError(401, 'You can not reset your password');
-  }
-
-  const user = await User.findById(decodedToken.userId);
-  if (!user) {
-    throw new AppError(401, 'User does not exist');
-  }
-
-  const hashedPassword = await bcryptjs.hash(
-    payload.newPassword,
-    Number(ENV.BCRYPT_SALT_ROUND)
-  );
-
-  user.password = hashedPassword;
-
-  await user.save();
-};
-
 export const forgotPassword = async (email: string) => {
   if (!email) throw new AppError(HTTP_CODE.BAD_GATEWAY, `Email is required`);
 
@@ -105,11 +82,9 @@ export const forgotPassword = async (email: string) => {
 
   const jwtPayload = {
     userId: user._id,
-    email: user.email,
-    role: user.role,
   };
 
-  const resetToken = jwt.sign(jwtPayload, ENV.JWT_ACCESS_SECRET, {
+  const resetToken = jwt.sign(jwtPayload, ENV.JWT_RESET_PASSWORD_SECRET, {
     expiresIn: '10m',
   });
 
@@ -120,7 +95,7 @@ export const forgotPassword = async (email: string) => {
       name: 'forgetPassword',
       data: {
         name: user.name,
-        resetUILink: `${ENV.FRONTEND_BASE_URL}/reset-password?id=${user._id}&token=${resetToken}`,
+        resetUILink: `${ENV.FRONTEND_BASE_URL}/reset-password?resetToken=${resetToken}`,
       },
     },
   });
@@ -129,6 +104,34 @@ export const forgotPassword = async (email: string) => {
     throw new AppError(
       HTTP_CODE.INTERNAL_SERVER_ERROR,
       `Failed to send reset email Link`
+    );
+};
+
+export const resetPassword = async (password: string, resetToken: string) => {
+  const { userId } = jwt.verify(
+    resetToken,
+    ENV.JWT_RESET_PASSWORD_SECRET
+  ) as JwtPayload;
+
+  let user = await User.findById(userId);
+
+  if (!user) throw new AppError(HTTP_CODE.BAD_REQUEST, `User not found!`);
+
+  password = bcryptjs.hashSync(
+    password,
+    bcryptjs.genSaltSync(ENV.BCRYPT_SALT_ROUND)
+  );
+
+  user = await User.findByIdAndUpdate(
+    userId,
+    { password },
+    { new: true, runValidators: true }
+  );
+
+  if (!user)
+    throw new AppError(
+      HTTP_CODE.INTERNAL_SERVER_ERROR,
+      `Failed to reset password`
     );
 };
 

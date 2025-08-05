@@ -1,35 +1,47 @@
-import { validateRequest } from '@/app/middlewares';
 import { Router } from 'express';
-import { zCreateUserSchema, zUpdateUserSchema } from './user.validation';
+import { checkAuth, multerUpload, validateRequest } from '@/app/middlewares';
 import * as controller from './user.controller';
-import { checkAuth } from '@/app/middlewares/_checkAuth';
+import * as validator from './user.validation';
 import { Role } from './user.interface';
 
 const router = Router();
 
 router.post(
   '/register',
-  validateRequest(zCreateUserSchema),
-  controller.createUser
+  validateRequest(validator.zCreateUserSchema),
+  controller.registerUser
+);
+
+router.patch(
+  '/edit',
+  checkAuth(...Object.values(Role)),
+  multerUpload.single('file'),
+  validateRequest(validator.zUpdateUserSchema),
+  controller.editProfile
 );
 
 router.get(
-  '/all-user',
+  '/get-all-users',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   controller.getAllUsers
 );
-
 router.get(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   controller.getSingleUser
 );
 
+router.get(
+  '/request-for-agent',
+  checkAuth(Role.USER),
+  controller.requestForAgent
+);
+
 router.patch(
-  '/update/:id',
-  validateRequest(zUpdateUserSchema),
-  checkAuth(...Object.values(Role)),
-  controller.updateUser
+  '/update-to-agent-status',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(validator.zUpdateToAgentSchema),
+  controller.updateToAgentStatus
 );
 
 export default router;

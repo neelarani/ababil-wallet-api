@@ -28,13 +28,17 @@ export const zGetVerifyUserSecretSchema = z.object({
     }),
 });
 
-export const zResetPasswordSchema = z.object({
-  id: z
-    .string('requestAgentId is required')
-    .refine(val => isValidObjectId(val.trim()), {
-      message: 'id must be a valid ObjectId',
+export const zForgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .email('Invalid email format')
+    .refine(val => val.trim() !== '', {
+      message: 'email is required',
     }),
-  newPassword: z
+});
+
+export const zResetPasswordSchema = z.object({
+  password: z
     .string()
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { IsActive, Role } from './user.interface';
+import { IsActive, IToAgentStatus, Role } from './user.interface';
+import { isValidObjectId } from 'mongoose';
 
 export const zCreateUserSchema = z.object({
   name: z
@@ -8,33 +9,30 @@ export const zCreateUserSchema = z.object({
     .refine(val => val.trim() !== '', {
       message: 'name is required',
     }),
+
   email: z
     .string()
     .email('Invalid email format')
     .refine(val => val.trim() !== '', {
       message: 'email is required',
     }),
+
   phone: z
     .string()
     .min(10, 'phone must be at least 10 digits')
     .refine(val => val.trim() !== '', {
       message: 'phone is required',
     }),
+
   password: z
     .string()
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
       {
         message:
           'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
       }
     ),
-
-  role: z
-    .enum([Role.USER, Role.AGENT])
-    .refine(val => !Object.values(val).includes(val), {
-      message: `Provided role must in ${Object.values(Role).join(', ')}`,
-    }),
 });
 
 export const zUpdateUserSchema = z.object({
@@ -45,28 +43,32 @@ export const zUpdateUserSchema = z.object({
       message: 'name is required',
     })
     .optional(),
+
   password: z
     .string()
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
       {
         message:
           'password must be at least 8 characters and include 1 uppercase, 1 lowercase, 1 number, and 1 special character',
       }
     )
     .optional(),
+
   isDeleted: z
     .boolean()
     .refine(val => val === void 0, {
       message: 'isDeleted is must be boolean',
     })
     .optional(),
+
   isActive: z
     .enum(Object.values(IsActive))
     .refine(val => !Object.values(val).includes(val), {
       message: `Provided role must in ${Object.values(IsActive).join(', ')}`,
     })
     .optional(),
+
   isVerified: z
     .boolean()
     .refine(val => val === void 0, {
@@ -80,4 +82,19 @@ export const zUpdateUserSchema = z.object({
       message: `Provided role must in ${Object.values(Role).join(', ')}`,
     })
     .optional(),
+});
+
+export const zUpdateToAgentSchema = z.object({
+  requestAgentId: z
+    .string('requestAgentId is required')
+    .refine(val => isValidObjectId(val.trim()), {
+      message: 'requestAgentId must be a valid ObjectId',
+    }),
+  status: z
+    .enum(Object.values(IToAgentStatus))
+    .refine(val => !Object.values(val).includes(val), {
+      message: `Provided status must in ${Object.values(IToAgentStatus).join(
+        ', '
+      )}`,
+    }),
 });

@@ -1,5 +1,12 @@
 import { model, Schema } from 'mongoose';
-import { IAuthProvider, IsActive, IUser, Role } from './user.interface';
+import {
+  IAuthProvider,
+  IsActive,
+  IToAgent,
+  IToAgentStatus,
+  IUser,
+  Role,
+} from './user.interface';
 import { Collections } from '@/interface';
 
 const authProviderSchema = new Schema<IAuthProvider>(
@@ -24,6 +31,7 @@ const userSchema = new Schema<IUser>(
       default: Role.USER,
     },
     phone: { type: String },
+    picture: { type: String },
     isDeleted: { type: String },
     isActive: {
       type: String,
@@ -38,18 +46,24 @@ const userSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: Collections.Wallet,
     },
-    transaction: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: Collections.Transaction,
-      },
-    ],
   },
-
   {
     timestamps: true,
     versionKey: false,
   }
 );
 
-export const User = model<IUser>('User', userSchema);
+const toAgentSchema = new Schema<IToAgent>({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: Collections.User,
+  },
+  status: {
+    type: String,
+    enum: Object.values(IToAgentStatus),
+    default: IToAgentStatus.PENDING,
+  },
+});
+
+export const User = model<IUser>(Collections.User, userSchema);
+export const ToAgent = model<IToAgent>(Collections.ToAgent, toAgentSchema);

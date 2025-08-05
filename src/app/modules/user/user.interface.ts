@@ -8,7 +8,7 @@ export enum Role {
 }
 
 export interface IAuthProvider {
-  provider: 'google' | 'credentials';
+  provider: 'credentials' | 'google';
   providerId: string;
 }
 
@@ -24,11 +24,21 @@ export interface IUser {
   email: string;
   password: string;
   phone: string;
+  picture?: string;
   isDeleted?: boolean;
   isActive?: IsActive;
   isVerified?: boolean;
   role: Role;
   auths: Array<IAuthProvider>;
   wallet: Schema.Types.ObjectId;
-  transaction: Schema.Types.ObjectId;
+}
+
+export enum IToAgentStatus {
+  PENDING = 'PENDING',
+  SUSPENDED = 'SUSPENDED',
+  APPROVED = 'APPROVED',
+}
+export interface IToAgent {
+  user: ObjectId | string;
+  status: IToAgentStatus;
 }

@@ -108,7 +108,7 @@ export const forgotPassword = catchAsync(async (req, res) => {
   sendResponse<void>(res, {
     success: true,
     status: HTTP_CODE.CREATED,
-    message: 'Password has been reset successfully!',
+    message: 'Reset Password Email has been sended!',
     data: await service.forgotPassword(req.body?.email),
   });
 });
@@ -118,7 +118,10 @@ export const resetPassword = catchAsync(async (req, res) => {
     success: true,
     status: HTTP_CODE.CREATED,
     message: 'Password has been reset successfully!',
-    data: await service.resetPassword(req.body, req.user as JwtPayload),
+    data: await service.resetPassword(
+      req.body.password as string,
+      req.query.resetToken as string
+    ),
   });
 });
 
