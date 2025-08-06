@@ -1,15 +1,15 @@
-import passport from 'passport';
-import { IsActive, Role } from '@/app/modules/user/user.interface';
-import { User } from '@/app/modules/user/user.model';
-import bcryptjs from 'bcryptjs';
+import passportJS from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
+import bcryptjs from 'bcryptjs';
+import { User } from '@/app/modules/user/user.model';
+import { IsActive, Role } from '@/app/modules/user/user.interface';
 import {
   Strategy as GoogleStrategy,
   Profile as GProfile,
 } from 'passport-google-oauth20';
 import { ENV } from './_env.config';
 
-passport.use(
+passportJS.use(
   new LocalStrategy(
     {
       usernameField: 'email',
@@ -23,13 +23,13 @@ passport.use(
           return done('User does not exist');
         }
 
-        if (!user.isVerified) done('User is not verified');
+        if (!user.isVerified) return done('User is not verified');
 
         if (
           user.isActive === IsActive.BLOCKED ||
           user.isActive === IsActive.INACTIVE
         )
-          done(`User is ${user.isActive}`);
+          return done(`User is ${user.isActive}`);
 
         if (user.isDeleted) done('User is deleted');
 
@@ -62,7 +62,7 @@ passport.use(
   )
 );
 
-passport.use(
+passportJS.use(
   new GoogleStrategy(
     {
       clientID: ENV.GOOGLE_CLIENT_ID,
@@ -110,11 +110,11 @@ passport.use(
   )
 );
 
-passport.serializeUser((user: any, done) => {
+passportJS.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(async (id: any, done) => {
+passportJS.deserializeUser(async (id: any, done) => {
   try {
     const user = await User.findById(id);
     done(null, user);
