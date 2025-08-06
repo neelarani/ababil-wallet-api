@@ -13,10 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
-const user_interface_1 = require("../app/modules/user/user.interface");
-const user_model_1 = require("../app/modules/user/user.model");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const passport_local_1 = require("passport-local");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const user_model_1 = require("../app/modules/user/user.model");
+const user_interface_1 = require("../app/modules/user/user.interface");
 const passport_google_oauth20_1 = require("passport-google-oauth20");
 const _env_config_1 = require("./_env.config");
 passport_1.default.use(new passport_local_1.Strategy({
@@ -29,10 +29,10 @@ passport_1.default.use(new passport_local_1.Strategy({
             return done('User does not exist');
         }
         if (!user.isVerified)
-            done('User is not verified');
+            return done('User is not verified');
         if (user.isActive === user_interface_1.IsActive.BLOCKED ||
             user.isActive === user_interface_1.IsActive.INACTIVE)
-            done(`User is ${user.isActive}`);
+            return done(`User is ${user.isActive}`);
         if (user.isDeleted)
             done('User is deleted');
         const isGoogleAuthenticated = user.auths.some(providerObjects => providerObjects.provider == 'google');
