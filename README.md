@@ -164,7 +164,7 @@ https://ababil-wallet-api.vercel.app/api/v1/auth/login
 ```bash
 # 1. Clone the repo
 git clone https://github.com/neelarani/ababil-wallet-api
-cd neela-wallet-api
+cd ababil-wallet-api
 
 # 2. Install dependencies
 npm install
