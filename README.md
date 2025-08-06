@@ -10,10 +10,10 @@ error handling, and Zod validation for peace of mind.
 
 ## 🌐 Base URL
 
-| Environment | URL                                          |
-| ----------- | -------------------------------------------- |
-| Development | `http://localhost:<PORT>/api/v1`             |
-| Production  | `https://neela-wallet-api.vercel.app/api/v1` |
+| Environment | URL                                           |
+| ----------- | --------------------------------------------- |
+| Development | `http://localhost:<PORT>/api/v1`              |
+| Production  | `https://ababil-wallet-api.vercel.app/api/v1` |
 
 ## 🚀 Key Features
 
@@ -111,14 +111,14 @@ POST /auth/login
 ### URL
 
 ```
-https://neela-wallet-api.vercel.app/api/v1/auth/login
+https://ababil-wallet-api.vercel.app/api/v1/auth/login
 ```
 
 ### Request Body
 
 ```json
 {
-  "email": "neela9622@gmail.com",
+  "email": "example@gmail.com",
   "password": "1D#dgo2435"
 }
 ```
@@ -145,7 +145,7 @@ https://neela-wallet-api.vercel.app/api/v1/auth/login
 ```
 
 > ✅ See more endpoints: 🔗
-> [View Full Collection in Postman](https://www.postman.com/ababil-team/my-public/collection/x1vduj9/neela-wallet-api)
+> [View Full Collection in Postman](https://www.postman.com/ababil-team/public-workspace/collection/jzu6si1/ababil-wallet-api?action=share&source=copy-link&creator=42682780)
 
 ## 🛠 Tech Stack
 
